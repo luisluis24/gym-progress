@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="manifest" href="manifest.json" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#7f5af0" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Gym Progress</title>
+ <style>
+  :root {
+    --text-light: #1a1a1a;
+    --text-dark: #f0f0f0;
+    --accent: #7f5af0;
+    --accent-hover: #6245df;
+  }
+
+  body {
+    position: relative;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0 10px 40px;
+    color: var(--text-light);
+    background: url('vegeta.jpg') no-repeat center center fixed;
+    background-size: cover;
+    transition: color 0.3s;
+    overflow-x: hidden;
+  }
+
+  body.dark {
+    color: var(--text-dark);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    animation: pulse 5s infinite;
+    z-index: -1;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.5;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.3;
+      transform: scale(1.03);
+    }
+  }
+
+  input, select, button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: 1.5px solid #ccc;
+    font-size: 16px;
+    transition: all 0.25s ease-in-out;
+  }
+
+  select:focus,
+  input:focus {
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  input:hover, select:hover {
+    box-shadow: 0 0 8px rgba(127, 90, 240, 0.5);
+  }
+
+  button {
+    background-color: var(--accent);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+
+  button:hover {
+    background-color: var(--accent-hover);
+    box-shadow: 0 4px 12px rgba(127, 90, 240, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .container {
+    max-width: 500px;
+    margin: 20px auto;
+    background-color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(6px);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    padding: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: background-color 0.3s, color 0.3s, box-shadow 0.25s ease-in-out, transform 0.25s ease-in-out;
+  }
+
+  .container:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+  }
+
+  body.dark .container {
+    background-color: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  h2 {
+    margin-top: 30px;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 6px;
+  }
+
+  .theme-toggle {
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    transition: transform 0.3s;
+  }
+
+  .theme-toggle:hover {
+    transform: scale(1.1);
+  }
+
+  #workoutList li {
+    background-color: #e0f7fa;
+    margin: 10px 0;
+    padding: 10px 15px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    transition: box-shadow 0.25s ease-in-out, transform 0.25s ease-in-out;
+  }
+
+  #workoutList li:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+
+  body.dark #workoutList li {
+    background-color: #263238;
+    color: var(--text-dark);
+  }
+
+  #workoutList li div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #workoutList li button {
+    margin-top: 4px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .edit-btn {
+    background-color: #ffe082;
+  }
+
+  .delete-btn {
+    background-color: #ef9a9a;
+  }
+
+  body.dark .edit-btn {
+    background-color: #ffca28;
+  }
+
+  body.dark .delete-btn {
+    background-color: #e57373;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  @media (max-width: 480px) {
+    .container {
+      margin: 15px 10px;
+      padding: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <h1>
+    Gym Progress
+    <button class="theme-toggle" id="toggleTheme">🌙</button>
+  </h1>
+
+  <div class="container">
+    <!-- Login y Registro -->
+    <div id="authSection">
+      <h2>Registro</h2>
+      <input type="email" id="regEmail" placeholder="Correo electrónico" />
+      <input type="password" id="regPassword" placeholder="Contraseña" />
+      <button id="btnRegister">Registrarse</button>
+
+      <h2>Iniciar Sesión</h2>
+      <input type="email" id="loginEmail" placeholder="Correo electrónico" />
+      <input type="password" id="loginPassword" placeholder="Contraseña" />
+      <button id="btnLogin">Entrar</button>
+    </div>
+
+    <!-- Usuario logueado -->
+    <div id="userSection" class="hidden">
+      <p>¡Hola, <span id="userEmail"></span>!</p>
+      <button id="btnLogout">Cerrar sesión</button>
+
+      <h2>Registrar Entrenamiento</h2>
+      <form id="workoutForm">
+  <input type="text" id="exercise" placeholder="Ejercicio" required />
+  <input type="number" id="reps" placeholder="Repeticiones" required />
+  <input type="number" step="0.1" id="weight" placeholder="Peso (kg)" required />
+  <input type="number" step="0.1" id="duration" placeholder="Duración (min)" required />
+
+  <select id="category" required>
+    <option value="">Selecciona categoría</option>
+    <option value="Pecho">Pecho</option>
+    <option value="Espalda">Espalda</option>
+    <option value="Piernas">Piernas</option>
+    <option value="Bíceps">Bíceps</option>
+    <option value="Tríceps">Tríceps</option>
+    <option value="Cardio">Cardio</option>
+    <option value="Hombros">Hombros</option>
+    <option value="Abdomen">Abdomen</option>
+  </select>
+
+  <button type="submit">Guardar entrenamiento</button>
+      <div id="errorMsg" style="color: red; margin-top: 5px; min-height: 20px;"></div>
+</form>
+      <input type="text" id="searchInput" placeholder="Buscar ejercicio..." />
+
+      <h2>Entrenamientos</h2>
+      <ul id="workoutList"></ul>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDYo5vISu4rVvjWVaYMlCQWKYaxjjTr8yQ",
+      authDomain: "gymnasio-6cf0e.firebaseapp.com",
+      projectId: "gymnasio-6cf0e",
+      storageBucket: "gymnasio-6cf0e.appspot.com",
+      messagingSenderId: "60675674529",
+      appId: "1:60675674529:web:c0542019c147827526fbe0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const authSection = document.getElementById('authSection');
+    const userSection = document.getElementById('userSection');
+    const userEmailSpan = document.getElementById('userEmail');
+    const btnRegister = document.getElementById('btnRegister');
+    const btnLogin = document.getElementById('btnLogin');
+    const btnLogout = document.getElementById('btnLogout');
+    const workoutForm = document.getElementById('workoutForm');
+    const workoutList = document.getElementById('workoutList');
+    const searchInput = document.getElementById('searchInput');
+    let idEditando = null;
+
+function mostrarError(msg) {
+  const errorDiv = document.getElementById('errorMsg');
+  errorDiv.textContent = msg;
+}
+
+    btnRegister.onclick = () => {
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+      if (!email || !password) return alert("Completa ambos campos");
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => alert("Registrado con éxito"))
+        .catch(err => alert(err.message));
+    };
+
+    btnLogin.onclick = () => {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      if (!email || !password) return alert("Completa ambos campos");
+
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(err => alert(err.message));
+    };
+
+    btnLogout.onclick = () => auth.signOut();
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        authSection.classList.add('hidden');
+        userSection.classList.remove('hidden');
+        userEmailSpan.textContent = user.email;
+        cargarEntrenamientos(user.uid);
+      } else {
+        authSection.classList.remove('hidden');
+        userSection.classList.add('hidden');
+      }
+    });
+
+    function cargarEntrenamientos(uid) {
+      workoutList.innerHTML = '';
+      db.collection("users").doc(uid).collection("workouts")
+        .orderBy("timestamp", "desc")
+        .get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            const li = document.createElement("li");
+            const fecha = d.timestamp?.toDate().toLocaleDateString() ?? 'Fecha desconocida';
+
+            li.innerHTML = `
+     <div>
+      <strong>${d.ejercicio}</strong> (${d.categoria})<br>
+      ${d.repeticiones} reps — ${d.peso} kg — ${d.duracion} min<br>
+      <small>${fecha}</small>
+    </div>
+    <div>
+<button class="edit-btn" onclick="editarEntrenamiento('${doc.id}', '${d.ejercicio}', ${d.repeticiones}, ${d.peso}, ${d.duracion}, '${d.categoria}')">✏️</button>
+     <button class="delete-btn" onclick="borrarEntrenamiento('${doc.id}')">🗑️</button>
+  </div>
+  `;
+
+            workoutList.appendChild(li);
+          });
+        });
+    }
+
+    function editarEntrenamiento(id, ejercicio, reps, peso, duracion, categoria) {
+  document.getElementById('exercise').value = ejercicio;
+  document.getElementById('reps').value = reps;
+  document.getElementById('weight').value = peso;
+  document.getElementById('duration').value = duracion;
+  document.getElementById('category').value = categoria;
+  idEditando = id;
+}
+
+    function borrarEntrenamiento(id) {
+      const user = auth.currentUser;
+      if (!user) return;
+      db.collection("users").doc(user.uid).collection("workouts").doc(id).delete()
+        .then(() => cargarEntrenamientos(user.uid));
+    }
+
+workoutForm.onsubmit = e => {
+  e.preventDefault();
+
+  const ejercicio = document.getElementById('exercise').value.trim();
+  const repeticiones = +document.getElementById('reps').value;
+  const peso = +document.getElementById('weight').value;
+  const duracion = +document.getElementById('duration').value;
+  const categoria = document.getElementById('category').value;
+  const user = auth.currentUser;
+
+  if (!user) {
+    mostrarError("Debes iniciar sesión para guardar un entrenamiento.");
+    return;
+  }
+  if (!ejercicio) {
+    mostrarError("El campo Ejercicio es obligatorio.");
+    return;
+  }
+  if (isNaN(repeticiones) || repeticiones <= 0) {
+    mostrarError("Las repeticiones deben ser un número mayor que 0.");
+    return;
+  }
+  if (isNaN(peso) || peso <= 0) {
+    mostrarError("El peso debe ser un número mayor que 0.");
+    return;
+  }
+  if (isNaN(duracion) || duracion <= 0) {
+    mostrarError("La duración debe ser un número mayor que 0.");
+    return;
+  }
+  if (!categoria) {
+    mostrarError("Selecciona una categoría.");
+    return;
+  }
+
+  mostrarError('');
+
+  const data = {
+    ejercicio, repeticiones, peso, duracion, categoria,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  const ref = db.collection("users").doc(user.uid).collection("workouts");
+
+  (idEditando
+    ? ref.doc(idEditando).update(data)
+    : ref.add(data)
+  ).then(() => {
+    idEditando = null;
+    workoutForm.reset();
+    cargarEntrenamientos(user.uid);
+  }).catch(err => {
+    mostrarError("Error guardando entrenamiento: " + err.message);
+  });
+
+    };
+
+    searchInput.addEventListener('input', e => {
+      const term = e.target.value.toLowerCase();
+      Array.from(workoutList.children).forEach(item => {
+        item.style.display = item.textContent.toLowerCase().includes(term) ? '' : 'none';
+      });
+    });
+
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'dark') {
+  document.body.classList.add('dark');
+  document.getElementById('toggleTheme').textContent = '☀️';
+} else {
+  document.getElementById('toggleTheme').textContent = '🌙';
+}
+
+document.getElementById('toggleTheme').onclick = () => {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  document.getElementById('toggleTheme').textContent = isDark ? '☀️' : '🌙';
+};
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js') // sin la barra si está en misma carpeta
+          .then(reg => console.log('Service Worker registrado', reg))
+          .catch(err => console.log('Error al registrar Service Worker', err));
+      });
+    }
+  </script>
+</body>
+</html>
